@@ -12,6 +12,8 @@ bool menu = true;
 float playerx = 0;
 float playery = 0;
 
+float speed = 5;
+
 sf::RectangleShape player;
 
 bool upkey = false;
@@ -21,7 +23,8 @@ bool rightkey = false;
 
 void Reset()
 {
-
+    playerx = 350;
+	playery = screenh - player.getSize().y;
 }
 
 void Logic() {
@@ -31,19 +34,35 @@ void Logic() {
     else {
         if (upkey)
         {
-			playery -= 5;
+            playery -= speed;
+            if (playery < 0)
+            {
+				playery = 0;
+            }
         }
         if (downkey)
         {
-            playery += 5;
+            playery += speed;
+            if (playery > screenh - player.getSize().y)
+            {
+                playery = screenh - player.getSize().y;
+            }
         }
         if (leftkey)
         {
-            playerx -= 5;
+            playerx -= speed;
+            if (playerx < 0)
+            {
+                playerx = 0;
+            }
         }
         if (rightkey)
         {
-            playerx += 5;
+            playerx += speed;
+            if (playerx > screenw - player.getSize().x)
+            {
+                playerx = screenw - player.getSize().x;
+            }
         }
 
 		player.setPosition(sf::Vector2f(playerx, playery));
@@ -80,6 +99,7 @@ int main() {
     // add actions to elements
     actionButton->onPress([&]() {
 		menu = false;
+		Reset();
     });
 
     while (window.isOpen()) {
@@ -87,22 +107,22 @@ int main() {
             // update ui events
             menuGui.handleEvent(*event);
             
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
                 upkey = true;
             else 
                 upkey = false;
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
                 leftkey = true;
             else
                 leftkey = false;
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
                 downkey = true;
             else 
                 downkey = false;
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
                 rightkey = true;
             else 
                 rightkey = false;
@@ -139,7 +159,7 @@ int main() {
         }
 
         window.display();
-        std::cout << "W: " << upkey << " A: " << leftkey << " S: " << downkey << " D:" << rightkey << std::endl;
+        //std::cout << "Input Keys. W: " << upkey << " A: " << leftkey << " S: " << downkey << " D:" << rightkey << std::endl;
     }
 
     return 0;
