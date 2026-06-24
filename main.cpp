@@ -11,8 +11,13 @@ bool menu = true;
 
 float playerx = 0;
 float playery = 0;
+float playervely = 0;
 
-float speed = 5;
+bool grounded = false;
+
+float speed = 15;
+float gravity = 2;
+float jumpForce = 25;
 
 sf::RectangleShape player;
 
@@ -32,37 +37,58 @@ void Logic() {
         
     }
     else {
-        if (upkey)
+        // calculate grounded
+        if (playery == screenh - player.getSize().y)
         {
-            playery -= speed;
-            if (playery < 0)
+            grounded = true;
+        }
+        else
+        {
+			grounded = false;
+        }
+
+        // jumping
+        if (grounded)
+        {
+			playervely = 0;
+            if (upkey)
             {
-				playery = 0;
+                playervely = -jumpForce;
             }
         }
-        if (downkey)
+        else
         {
-            playery += speed;
-            if (playery > screenh - player.getSize().y)
-            {
-                playery = screenh - player.getSize().y;
-            }
+            playervely += gravity;
         }
+
+        // left and right
         if (leftkey)
         {
             playerx -= speed;
-            if (playerx < 0)
-            {
-                playerx = 0;
-            }
         }
         if (rightkey)
         {
             playerx += speed;
-            if (playerx > screenw - player.getSize().x)
-            {
-                playerx = screenw - player.getSize().x;
-            }
+        }
+
+		playery += playervely;
+
+		// keep player in bounds
+        if (playerx < 0)
+        {
+            playerx = 0;
+        }
+        if (playerx > screenw - player.getSize().x)
+        {
+            playerx = screenw - player.getSize().x;
+        }
+        if (playery < 0)
+        {
+            playery = 0;
+        }
+        if (playery > screenh - player.getSize().y)
+        {
+            playery = screenh - player.getSize().y;
         }
 
 		player.setPosition(sf::Vector2f(playerx, playery));
@@ -77,7 +103,7 @@ int main() {
 
     // SFML objects
     // player
-    player.setFillColor(sf::Color(150, 0, 0));
+    player.setFillColor(sf::Color(255, 50, 50));
     player.setSize(sf::Vector2f(50, 50));
     player.setPosition(sf::Vector2f( playerx, playery ));
 
@@ -136,7 +162,14 @@ int main() {
         Logic();
 
         // drawing
-        window.clear(sf::Color(0, 0, 0));
+        if (menu)
+        {
+            window.clear(sf::Color(0, 0, 0));
+        }
+        else
+        {
+            window.clear(sf::Color(100, 190, 230));
+        }
 
         // draw sfml before tgui
         if (menu)
