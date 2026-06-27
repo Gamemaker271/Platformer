@@ -8,20 +8,21 @@ const int screenw = 800;
 const int screenh = 600;
 
 bool menu = true;
+int level = 1;
 
-//float playerx = 0;
-//float playery = 0;
 float playervely = 0;
 
 bool grounded = false;
 
-float speed = 15;
+float speed = 12;
 float gravity = 2;
-float jumpForce = 25;
+float jumpForce = 23;
 
 sf::RectangleShape player;
 sf::RectangleShape lefteye;
 sf::RectangleShape righteye;
+
+sf::RectangleShape portal;
 
 std::vector<sf::RectangleShape> Walls;
 
@@ -34,17 +35,36 @@ void Reset()
 {
     player.setPosition(sf::Vector2f(100, screenh - player.getSize().y));
     Walls.clear();
-    if (true) {
+    if (level == 1) {
         sf::RectangleShape a;
         // wall 1
-        a.setSize(sf::Vector2f(100, 100));
         a.setPosition(sf::Vector2f(300, 500));
+        a.setSize(sf::Vector2f(150, 100));
         a.setFillColor(sf::Color(50, 50, 50));
         Walls.push_back(a);
-
         // wall 2
-        a.setSize(sf::Vector2f(100, 100));
-        a.setPosition(sf::Vector2f(600, 500));
+        a.setPosition(sf::Vector2f(550, 400));
+        a.setSize(sf::Vector2f(150, 50));
+        a.setFillColor(sf::Color(50, 50, 50));
+        Walls.push_back(a);
+        // wall 3
+        a.setPosition(sf::Vector2f(250, 300));
+        a.setSize(sf::Vector2f(150, 50));
+        a.setFillColor(sf::Color(50, 50, 50));
+        Walls.push_back(a);
+        // wall 4
+        a.setPosition(sf::Vector2f(0, 200));
+        a.setSize(sf::Vector2f(200, 50));
+        a.setFillColor(sf::Color(50, 50, 50));
+        Walls.push_back(a);
+        // wall 5
+        a.setPosition(sf::Vector2f(350, 150));
+        a.setSize(sf::Vector2f(150, 50));
+        a.setFillColor(sf::Color(50, 50, 50));
+        Walls.push_back(a);
+        // wall 6
+        a.setPosition(sf::Vector2f(600, 100));
+        a.setSize(sf::Vector2f(200, 50));
         a.setFillColor(sf::Color(50, 50, 50));
         Walls.push_back(a);
     }
@@ -81,7 +101,7 @@ void Physics() // this function made with the help of AI
         if (checkBoxCollision(player, wall)) {
             if (leftkey) {
                 // move left into a wall, push right to the wall's right edge
-                player.setPosition(sf::Vector2f(wall.getPosition().x + player.getSize().x, player.getPosition().y));
+                player.setPosition(sf::Vector2f(wall.getPosition().x + wall.getSize().x, player.getPosition().y));
             }
             if (rightkey) {
                 // move right into a wall, push left to the wall's left edge
@@ -160,7 +180,6 @@ int main() {
     // player
     player.setFillColor(sf::Color(255, 50, 50));
     player.setSize(sf::Vector2f(50, 50));
-    //player.setPosition(sf::Vector2f( playerx, playery ));
 
 	// left eye
     lefteye.setFillColor(sf::Color(0, 0, 0));
@@ -172,6 +191,9 @@ int main() {
     righteye.setSize(sf::Vector2f(15, 20));
     //righteye.setPosition(sf::Vector2f(playerx + 10, playery));
 
+    portal.setFillColor(sf::Color::Green);
+    portal.setSize(sf::Vector2f(50, 100));
+    portal.setPosition(sf::Vector2f(750, 0));
 
     // TGUI stuff
     // title
@@ -244,10 +266,14 @@ int main() {
         }
         else
         {
+            // scene
             for (int i = 0; i < Walls.size(); i++)
             {
                 window.draw(Walls[i]);
             }
+            window.draw(portal);
+
+            // player
             window.draw(player);
             window.draw(lefteye);
             window.draw(righteye);
@@ -264,7 +290,7 @@ int main() {
         }
 
         window.display();
-        std::cout << "Grounded: " << grounded << std::endl;
+        //std::cout << "Grounded: " << grounded << std::endl;
         //std::cout << "Input Keys. W: " << upkey << " A: " << leftkey << " S: " << downkey << " D:" << rightkey << std::endl;
     }
 
