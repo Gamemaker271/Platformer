@@ -1,0 +1,49 @@
+void Physics()
+{
+	// calculate grounded
+	if (playery == screenh - player.getSize().y || CheckGrounded())
+	    grounded = true;
+	else
+	    grounded = false;
+
+	// jumping
+	if (grounded)
+	{
+ 	   playervely = 0;
+ 	   if (upkey)
+ 	   {
+  	      playervely = -jumpForce;
+	   }
+	}
+	else
+	    playervely += gravity;
+
+	// left and right
+	if (leftkey)
+	{
+ 	   playerx -= speed;
+ 	   if (BasicCheckCollide()) {
+ 	       playerx += speed;
+	    }
+	}
+	if (rightkey)
+	{
+    	playerx += speed;
+    	if (BasicCheckCollide()) {
+        	playerx -= speed;
+    	}
+	}
+
+	// add velocity
+	playery += playervely;
+
+	// keep player in bounds
+	if (playerx < 0)
+    		playerx = 0;
+	if (playerx > screenw - player.getSize().x)
+    		playerx = screenw - player.getSize().x;
+	if (playery < 0)
+    		playery = 0;
+	if (playery > screenh - player.getSize().y)
+    		playery = screenh - player.getSize().y;
+}

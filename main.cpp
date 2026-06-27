@@ -52,25 +52,14 @@ void Reset()
     }
 }
 
-bool CheckGrounded()
+bool checkBoxCollision(sf::RectangleShape a, sf::RectangleShape b)
 {
     // collision
     if (
-        (playerx < Walls[0].getPosition().x + Walls[0].getSize().x) && (playerx + player.getSize().x > Walls[0].getPosition().x) &&
-        (playery < Walls[0].getPosition().y + Walls[0].getSize().y) && (playery + player.getSize().y > Walls[0].getPosition().y)
-        )
-    {
-        return true;
-    }
-    else
-        return false;
-}
-bool CheckCollide()
-{
-    // collision
-    if (
-        (playerx < Walls[0].getPosition().x + Walls[0].getSize().x) && (playerx + player.getSize().x > Walls[0].getPosition().x) &&
-        (playery < Walls[0].getPosition().y + Walls[0].getSize().y) && (playery + player.getSize().y > Walls[0].getPosition().y)
+        (a.getPosition().x < b.getPosition().x + b.getSize().x) &&
+        (a.getPosition().x + a.getSize().x > b.getPosition().x) &&
+        (a.getPosition().y < b.getPosition().y + b.getSize().y) &&
+        (a.getPosition().y + a.getSize().y > b.getPosition().y)
         )
     {
         return true;
@@ -79,57 +68,78 @@ bool CheckCollide()
         return false;
 }
 
-void Physics()
+void Physics() // this function made with the help of AI
 {
-    // calculate grounded
-    if (playery == screenh - player.getSize().y)
-        grounded = true;
-    else
-        grounded = false;
+    /*----- do x axis collisions and movement -----*/
+    if (leftkey)  playerx -= speed;
+    if (rightkey) playerx += speed;
 
-    // jumping
-    if (grounded)
-    {
-        playervely = 0;
-        if (upkey)
-        {
-            playervely = -jumpForce;
+    // keep inside screen boundries
+    if (playerx < 0) playerx = 0;
+    if (playerx > screenw - player.getSize().x) playerx = screenw - player.getSize().x;
+
+    // sync playerx and playery to sfml object
+    player.setPosition(sf::Vector2f(playerx, playery));
+
+    // loop through walls to check and push player back horizontally
+    for (const auto& wall : Walls) {
+        if (checkBoxCollision(player, wall)) {
+            if (leftkey) {
+                // move left into a wall, push right to the wall's right edge
+                playerx = wall.getPosition().x + wall.getSize().x;
+            }
+            if (rightkey) {
+                // move right into a wall, push left to the wall's left edge
+                playerx = wall.getPosition().x - player.getSize().x;
+            }
+            player.setPosition(sf::Vector2f(playerx, playery)); // Update sfml object
         }
     }
-    else
+    /*----- resolve y axis collisions -----*/
+    // do gravity if not grounded
+    if (!grounded) {
         playervely += gravity;
-
-    // left and right
-    if (leftkey)
-    {
-        playerx -= speed;
-        if (CheckCollide()) {
-            playerx += speed;
-        }
     }
-    if (rightkey)
-    {
-        playerx += speed;
-        if (CheckCollide()) {
-            playerx -= speed;
-        }
-    }
-
-    // add velocity
     playery += playervely;
-    if (CheckCollide()) {
-        playery -= playervely;
-    }
 
-    // keep player in bounds
-    if (playerx < 0)
-        playerx = 0;
-    if (playerx > screenw - player.getSize().x)
-        playerx = screenw - player.getSize().x;
-    if (playery < 0)
-        playery = 0;
-    if (playery > screenh - player.getSize().y)
+    // Apply strict screen floor boundary
+    if (playery > screenh - player.getSize().y) {
         playery = screenh - player.getSize().y;
+        playervely = 0;
+        grounded = true; // if on or below bottom of screen, will be grounded
+    }
+    if (playery < 0) {
+        playery = 0;
+        playervely = 0;
+    }
+    // update sfml object
+    player.setPosition(sf::Vector2f(playerx, playery));
+
+    // set grounded to true if player is touching bottom of screen, else it is false
+    grounded = (playery == screenh - player.getSize().y);
+
+    // loop through Walls to check collisions vertically
+    for (const auto& wall : Walls) {
+        if (checkBoxCollision(player, wall)) {
+            if (playervely > 0.0f) {
+                // falling down onto a platform
+                playery = wall.getPosition().y - player.getSize().y; // Snap to top of tile
+                playervely = 0.0f;                                  // reset velocity
+                grounded = true;                                    // set grounded
+            }
+            else if (playervely < 0.0f) {
+                // moving up (hitting head on ceiling)
+                playery = wall.getPosition().y + wall.getSize().y; // Snap underneath tile
+                playervely = 0.0f;                                  // Stop upward momentum
+            }
+            player.setPosition(sf::Vector2f(playerx, playery)); // update sfml object
+        }
+    }
+    /*----- do y movement -----*/
+    if (grounded && upkey) {
+        playervely = -jumpForce;
+        grounded = false;
+    }
 }
 void DrawPlayer()
 {
@@ -263,6 +273,7 @@ int main() {
         }
 
         window.display();
+        std::cout << "Grounded: " << grounded << std::endl;
         //std::cout << "Input Keys. W: " << upkey << " A: " << leftkey << " S: " << downkey << " D:" << rightkey << std::endl;
     }
 
