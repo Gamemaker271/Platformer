@@ -9,9 +9,8 @@ const int screenh = 600;
 
 bool menu = true;
 
-
-float playerx = 0;
-float playery = 0;
+//float playerx = 0;
+//float playery = 0;
 float playervely = 0;
 
 bool grounded = false;
@@ -33,8 +32,7 @@ bool rightkey = false;
 
 void Reset()
 {
-    playerx = 100;
-	playery = screenh - player.getSize().y;
+    player.setPosition(sf::Vector2f(100, screenh - player.getSize().y));
     Walls.clear();
     if (true) {
         sf::RectangleShape a;
@@ -71,28 +69,24 @@ bool checkBoxCollision(sf::RectangleShape a, sf::RectangleShape b)
 void Physics() // this function made with the help of AI
 {
     /*----- do x axis collisions and movement -----*/
-    if (leftkey)  playerx -= speed;
-    if (rightkey) playerx += speed;
+    if (leftkey)  player.setPosition(sf::Vector2f(player.getPosition().x - speed, player.getPosition().y));
+    if (rightkey) player.setPosition(sf::Vector2f(player.getPosition().x + speed, player.getPosition().y));
 
     // keep inside screen boundries
-    if (playerx < 0) playerx = 0;
-    if (playerx > screenw - player.getSize().x) playerx = screenw - player.getSize().x;
-
-    // sync playerx and playery to sfml object
-    player.setPosition(sf::Vector2f(playerx, playery));
+    if (player.getPosition().x < 0) player.setPosition(sf::Vector2f(0, player.getPosition().y));
+    if (player.getPosition().x > screenw - player.getSize().x) player.setPosition(sf::Vector2f(screenw - player.getSize().x, player.getPosition().y));
 
     // loop through walls to check and push player back horizontally
     for (const auto& wall : Walls) {
         if (checkBoxCollision(player, wall)) {
             if (leftkey) {
                 // move left into a wall, push right to the wall's right edge
-                playerx = wall.getPosition().x + wall.getSize().x;
+                player.setPosition(sf::Vector2f(wall.getPosition().x + player.getSize().x, player.getPosition().y));
             }
             if (rightkey) {
                 // move right into a wall, push left to the wall's left edge
-                playerx = wall.getPosition().x - player.getSize().x;
+                player.setPosition(sf::Vector2f(wall.getPosition().x - player.getSize().x, player.getPosition().y));
             }
-            player.setPosition(sf::Vector2f(playerx, playery)); // Update sfml object
         }
     }
     /*----- resolve y axis collisions -----*/
@@ -100,39 +94,37 @@ void Physics() // this function made with the help of AI
     if (!grounded) {
         playervely += gravity;
     }
-    playery += playervely;
+    // act on velocity
+    player.setPosition(sf::Vector2f(player.getPosition().x, player.getPosition().y + playervely));
 
     // Apply strict screen floor boundary
-    if (playery > screenh - player.getSize().y) {
-        playery = screenh - player.getSize().y;
+    if (player.getPosition().y > screenh - player.getSize().y) {
+        player.setPosition(sf::Vector2f(player.getPosition().x, screenh - player.getSize().y));
         playervely = 0;
         grounded = true; // if on or below bottom of screen, will be grounded
     }
-    if (playery < 0) {
-        playery = 0;
+    if (player.getPosition().y < 0) {
+        player.setPosition(sf::Vector2f(player.getPosition().x, 0));
         playervely = 0;
     }
-    // update sfml object
-    player.setPosition(sf::Vector2f(playerx, playery));
 
     // set grounded to true if player is touching bottom of screen, else it is false
-    grounded = (playery == screenh - player.getSize().y);
+    grounded = (player.getPosition().y == screenh - player.getSize().y);
 
     // loop through Walls to check collisions vertically
     for (const auto& wall : Walls) {
         if (checkBoxCollision(player, wall)) {
             if (playervely > 0.0f) {
                 // falling down onto a platform
-                playery = wall.getPosition().y - player.getSize().y; // Snap to top of tile
+                player.setPosition(sf::Vector2f(player.getPosition().x, wall.getPosition().y - player.getSize().y)); // Snap to top of tile
                 playervely = 0.0f;                                  // reset velocity
                 grounded = true;                                    // set grounded
             }
             else if (playervely < 0.0f) {
                 // moving up (hitting head on ceiling)
-                playery = wall.getPosition().y + wall.getSize().y; // Snap underneath tile
+                player.setPosition(sf::Vector2f(player.getPosition().x, wall.getPosition().y + wall.getSize().y)); // Snap underneath tile
                 playervely = 0.0f;                                  // Stop upward momentum
             }
-            player.setPosition(sf::Vector2f(playerx, playery)); // update sfml object
         }
     }
     /*----- do y movement -----*/
@@ -144,9 +136,8 @@ void Physics() // this function made with the help of AI
 void DrawPlayer()
 {
     // update player sprite
-    player.setPosition(sf::Vector2f(playerx, playery));
-    lefteye.setPosition(sf::Vector2f(playerx + 2.5, playery + 10));
-    righteye.setPosition(sf::Vector2f(playerx + (50 - 15 - 2.5), playery + 10));
+    lefteye.setPosition(sf::Vector2f(player.getPosition().x + 2.5, player.getPosition().y + 10));
+    righteye.setPosition(sf::Vector2f(player.getPosition().x + (50 - 15 - 2.5), player.getPosition().y + 10));
 }
 void Logic()
 {
@@ -169,17 +160,17 @@ int main() {
     // player
     player.setFillColor(sf::Color(255, 50, 50));
     player.setSize(sf::Vector2f(50, 50));
-    player.setPosition(sf::Vector2f( playerx, playery ));
+    //player.setPosition(sf::Vector2f( playerx, playery ));
 
 	// left eye
     lefteye.setFillColor(sf::Color(0, 0, 0));
     lefteye.setSize(sf::Vector2f(15, 20));
-    lefteye.setPosition(sf::Vector2f(playerx - 10, playery));
+    //lefteye.setPosition(sf::Vector2f(playerx - 10, playery));
 
     // right eye
     righteye.setFillColor(sf::Color(0, 0, 0));
     righteye.setSize(sf::Vector2f(15, 20));
-    righteye.setPosition(sf::Vector2f(playerx + 10, playery));
+    //righteye.setPosition(sf::Vector2f(playerx + 10, playery));
 
 
     // TGUI stuff
