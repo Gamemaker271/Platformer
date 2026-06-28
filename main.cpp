@@ -68,6 +68,39 @@ void Reset()
         a.setFillColor(sf::Color(50, 50, 50));
         Walls.push_back(a);
     }
+    else if (level == 2) {
+        sf::RectangleShape a;
+        // ladder wall 1
+        a.setPosition(sf::Vector2f(250, 500));
+        a.setSize(sf::Vector2f(150, 50));
+        a.setFillColor(sf::Color(50, 50, 50));
+        Walls.push_back(a);
+        // ladder wall 2
+        a.setPosition(sf::Vector2f(400, 400));
+        a.setSize(sf::Vector2f(150, 50));
+        a.setFillColor(sf::Color(50, 50, 50));
+        Walls.push_back(a);
+        // ladder wall 3
+        a.setPosition(sf::Vector2f(250, 300));
+        a.setSize(sf::Vector2f(150, 50));
+        a.setFillColor(sf::Color(50, 50, 50));
+        Walls.push_back(a);
+        // ladder wall 4
+        a.setPosition(sf::Vector2f(400, 200));
+        a.setSize(sf::Vector2f(150, 50));
+        a.setFillColor(sf::Color(50, 50, 50));
+        Walls.push_back(a);
+        // end platform wall 5
+        a.setPosition(sf::Vector2f(600, 150));
+        a.setSize(sf::Vector2f(200, 50));
+        a.setFillColor(sf::Color(50, 50, 50));
+        Walls.push_back(a);
+        // end platform wall 6
+        a.setPosition(sf::Vector2f(700, 100));
+        a.setSize(sf::Vector2f(100, 50));
+        a.setFillColor(sf::Color(50, 50, 50));
+        Walls.push_back(a);
+    }
 }
 
 bool checkBoxCollision(sf::RectangleShape a, sf::RectangleShape b)
@@ -152,6 +185,17 @@ void Physics() // this function made with the help of AI
         playervely = -jumpForce;
         grounded = false;
     }
+
+    // other collisions
+    if (checkBoxCollision(player, portal)) {
+        if (level != 2)
+        {
+            level++;
+            Reset();
+        }
+        else
+            menu = true;
+    }
 }
 void DrawPlayer()
 {
@@ -205,15 +249,31 @@ int main() {
     menuGui.add(titleLabel);
 
     // button
-    auto actionButton = tgui::Button::create("Play");
-    actionButton->setSize(120, 40);
-    actionButton->setPosition(340, 100);
-    menuGui.add(actionButton);
+    auto playButton = tgui::Button::create("Play");
+    playButton->setSize(120, 40);
+    playButton->setPosition(340, 100);
+    menuGui.add(playButton);
+
+    // level select buttons
+    auto l1Button = tgui::Button::create("1");
+    l1Button->setSize(50, 50);
+    l1Button->setPosition(300, 200);
+    menuGui.add(l1Button);
+    auto l2Button = tgui::Button::create("2");
+    l2Button->setSize(50, 50);
+    l2Button->setPosition(360, 200);
+    menuGui.add(l2Button);
 
     // add actions to elements
-    actionButton->onPress([&]() {
+    playButton->onPress([&]() {
 		menu = false;
 		Reset();
+    });
+    l1Button->onPress([&]() {
+        level = 1;
+    });
+    l2Button->onPress([&]() {
+        level = 2;
     });
 
     while (window.isOpen()) {
