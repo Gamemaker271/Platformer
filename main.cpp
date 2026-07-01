@@ -25,6 +25,7 @@ sf::RectangleShape righteye;
 sf::RectangleShape portal;
 
 std::vector<sf::RectangleShape> Walls;
+std::vector<sf::RectangleShape> Hazards;
 
 bool upkey = false;
 bool downkey = false;
@@ -33,13 +34,13 @@ bool rightkey = false;
 
 void Reset()
 {
-    player.setPosition(sf::Vector2f(100, screenh - player.getSize().y));
     Walls.clear();
     if (level == 1) {
+        player.setPosition(sf::Vector2f(100, screenh - player.getSize().y));
         sf::RectangleShape a;
         // wall 1
-        a.setPosition(sf::Vector2f(300, 500));
-        a.setSize(sf::Vector2f(150, 100));
+        a.setPosition(sf::Vector2f(250, 500));
+        a.setSize(sf::Vector2f(250, 100));
         a.setFillColor(sf::Color(50, 50, 50));
         Walls.push_back(a);
         // wall 2
@@ -69,24 +70,25 @@ void Reset()
         Walls.push_back(a);
     }
     else if (level == 2) {
+        player.setPosition(sf::Vector2f(100, screenh - 2 * player.getSize().y));
         sf::RectangleShape a;
         // ladder wall 1
-        a.setPosition(sf::Vector2f(250, 500));
-        a.setSize(sf::Vector2f(150, 50));
+        a.setPosition(sf::Vector2f(0, 550));
+        a.setSize(sf::Vector2f(350, 50));
         a.setFillColor(sf::Color(50, 50, 50));
         Walls.push_back(a);
         // ladder wall 2
-        a.setPosition(sf::Vector2f(400, 400));
+        a.setPosition(sf::Vector2f(400, 450));
         a.setSize(sf::Vector2f(150, 50));
         a.setFillColor(sf::Color(50, 50, 50));
         Walls.push_back(a);
         // ladder wall 3
-        a.setPosition(sf::Vector2f(250, 300));
+        a.setPosition(sf::Vector2f(200, 350));
         a.setSize(sf::Vector2f(150, 50));
         a.setFillColor(sf::Color(50, 50, 50));
         Walls.push_back(a);
         // ladder wall 4
-        a.setPosition(sf::Vector2f(400, 200));
+        a.setPosition(sf::Vector2f(400, 250));
         a.setSize(sf::Vector2f(150, 50));
         a.setFillColor(sf::Color(50, 50, 50));
         Walls.push_back(a);
@@ -100,6 +102,22 @@ void Reset()
         a.setSize(sf::Vector2f(100, 50));
         a.setFillColor(sf::Color(50, 50, 50));
         Walls.push_back(a);
+
+        // hazards
+        // lava 1
+        a.setPosition(sf::Vector2f(350, 550));
+        a.setSize(sf::Vector2f(450, 50));
+        a.setFillColor(sf::Color(255, 0, 0));
+        Hazards.push_back(a);
+    }
+}
+
+void Die() {
+    if (level == 1) {
+        player.setPosition(sf::Vector2f(100, screenh - player.getSize().y));
+    }
+    else if (level == 2) {
+        player.setPosition(sf::Vector2f(100, screenh - 2 * player.getSize().y));
     }
 }
 
@@ -187,6 +205,11 @@ void Physics() // this function made with the help of AI
     }
 
     // other collisions
+    for (const auto& hazard : Hazards) {
+        if (checkBoxCollision(player, hazard)) {
+            Die();
+        }
+    }
     if (checkBoxCollision(player, portal)) {
         if (level != 2)
         {
@@ -266,14 +289,20 @@ int main() {
 
     // add actions to elements
     playButton->onPress([&]() {
-		menu = false;
-		Reset();
+        if (menu) {
+            menu = false;
+            Reset();
+        }
     });
     l1Button->onPress([&]() {
-        level = 1;
+        if (menu) {
+            level = 1;
+        }
     });
     l2Button->onPress([&]() {
-        level = 2;
+        if (menu) {
+            level = 2;
+        }
     });
 
     while (window.isOpen()) {
@@ -330,6 +359,10 @@ int main() {
             for (int i = 0; i < Walls.size(); i++)
             {
                 window.draw(Walls[i]);
+            }
+            for (int i = 0; i < Hazards.size(); i++)
+            {
+                window.draw(Hazards[i]);
             }
             window.draw(portal);
 
